@@ -33,9 +33,14 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-    // let longURL = ...
-    let longURL = urlDatabase[req.url.slice(3)];
-    res.redirect(longURL);
+    //if the requested URL doesnt exist
+    if(!urlDatabase[req.url.slice(3)]) {
+        console.log('That is not a valid tiny-url!');
+        res.send('Invalid URL. Please double check the URL.');
+    } else {
+        let longURL = urlDatabase[req.url.slice(3)];
+        res.redirect(longURL);
+    }
 });
 
 app.post("/urls", (req, res) => {
@@ -43,7 +48,8 @@ app.post("/urls", (req, res) => {
     var tinyURL = generateRandomString();
     urlDatabase[tinyURL] = req.body.longURL;
     console.log("Database updated\n", urlDatabase);
-    res.status(302).send(`http://localhost:8080/urls/${tinyURL}`);
+    //TODO: CHECK STATUS CODE
+    res.status(301).redirect(`http://localhost:8080/urls/${tinyURL}`);
 });
 
 app.listen(PORT, () => {
