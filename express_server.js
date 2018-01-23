@@ -32,9 +32,18 @@ app.get("/urls/:id", (req, res) => {
     res.render("url_show", templateVars);
 });
 
+app.get("/u/:shortURL", (req, res) => {
+    // let longURL = ...
+    let longURL = urlDatabase[req.url.slice(3)];
+    res.redirect(longURL);
+});
+
 app.post("/urls", (req, res) => {
     console.log(req.body); // debug statement to see POST parameters
-    res.send("Ok"); // Respond with 'Ok' (we will replace this)
+    var tinyURL = generateRandomString();
+    urlDatabase[tinyURL] = req.body.longURL;
+    console.log("Database updated\n", urlDatabase);
+    res.status(302).send(`http://localhost:8080/urls/${tinyURL}`);
 });
 
 app.listen(PORT, () => {
@@ -42,7 +51,7 @@ app.listen(PORT, () => {
 });
 
 function generateRandomString() {
-    var rand = Math.floor(Math.random()*100000000).toString();
+    var rand = Math.floor(Math.random() * 100000000).toString();
     return rand.hashCode();
 }
 
@@ -51,10 +60,9 @@ String.prototype.hashCode = function () {
     if (this.length == 0) return hash;
     for (i = 0; i < this.length; i++) {
         char = this.charCodeAt(i);
-        rand = Math.floor(Math.random()*100);
+        rand = Math.floor(Math.random() * 100);
         hash = ((hash << 5) - hash) + char - rand;
         hash = Math.abs(hash & hash); // Convert to 32bit integer
     }
     return hash.toString(16);
 }
-console.log(generateRandomString("www.gmail.com"));
