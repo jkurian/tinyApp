@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>TinyApp</title>
+</head>
+<body>
+    <table>
+            <tr>
+                <td>URLs</td>
+                <td>Shortened URLs</td>
+            </tr>
+            <% for(let url in urlList) { %>
+                <tr>
+                    <td> <%= urlList[url] %> </td>
+                    <td> <%= url %> </td>
+                </tr>
+            <% }; %>
+        </table>
+</body>
+</html>
