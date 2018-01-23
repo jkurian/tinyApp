@@ -24,19 +24,12 @@ app.get("/urls/new/", (req, res) => {
     res.render("urls_new");
 });
 
-app.get("/urls/:id", (req, res) => {
-    let templateVars = {
-        tinyURL: req.params.id,
-        urlDatabase: urlDatabase
-    };
-    res.render("url_show", templateVars);
-});
-
 app.get("/u/:shortURL", (req, res) => {
     //if the requested URL doesnt exist
     if(!urlDatabase[req.url.slice(3)]) {
         console.log('That is not a valid tiny-url!');
-        res.send('Invalid URL. Please double check the URL.');
+        // res.status(303).send('Invalid URL. Please double check the URL.');
+        res.status(302).redirect('/urls/new');
     } else {
         let longURL = urlDatabase[req.url.slice(3)];
         res.redirect(longURL);
@@ -49,7 +42,15 @@ app.post("/urls", (req, res) => {
     urlDatabase[tinyURL] = req.body.longURL;
     console.log("Database updated\n", urlDatabase);
     //TODO: CHECK STATUS CODE
-    res.status(301).redirect(`http://localhost:8080/urls/${tinyURL}`);
+    res.status(302).redirect(`http://localhost:8080/urls/${tinyURL}`);
+});
+
+app.get("/urls/:id", (req, res) => {
+    let templateVars = {
+        tinyURL: req.params.id,
+        urlDatabase: urlDatabase
+    };
+    res.render("url_show", templateVars);
 });
 
 app.listen(PORT, () => {
@@ -70,5 +71,5 @@ String.prototype.hashCode = function () {
         hash = ((hash << 5) - hash) + char - rand;
         hash = Math.abs(hash & hash); // Convert to 32bit integer
     }
-    return hash.toString(16);
+    return hash.toString(32);
 }
