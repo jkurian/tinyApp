@@ -41,13 +41,13 @@
 //     console.log(`Example app listening on port ${PORT}!`);
 // });
 
-function generateRandomString(url) {
-    return url.hashCode();
+function generateRandomString() {
+    var rand = Math.floor(Math.random()*100000000).toString();
+    return rand.hashCode();
 }
 
 String.prototype.hashCode = function () {
     var hash = 0;
-    var rand = Math.floor(Math.random()*100);
     if (this.length == 0) return hash;
     for (i = 0; i < this.length; i++) {
         char = this.charCodeAt(i);
