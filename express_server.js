@@ -4,6 +4,7 @@ const PORT = process.env.PORT || 8080; // default port 8080
 const bodyParser = require("body-parser");
 
 app.set("view engine", "ejs")
+
 app.use(bodyParser.urlencoded({
     extended: true
 }));
@@ -51,6 +52,18 @@ app.get("/urls/:id", (req, res) => {
         urlDatabase: urlDatabase
     };
     res.render("url_show", templateVars);
+});
+
+app.post("/urls/:id", (req, res) => {
+    console.log(req.params.id, req.body.newURL);
+    urlDatabase[req.params.id] = req.body.newURL;
+
+    res.status(301).redirect('http://localhost:8080/urls/');
+});
+
+app.post("/urls/:id/delete", (req, res) => {
+    delete urlDatabase[req.params.id];
+    res.status(301).redirect('http://localhost:8080/urls/');
 });
 
 app.listen(PORT, () => {

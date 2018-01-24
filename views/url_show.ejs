@@ -1,20 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <% include ./partials/_header %>
+    <title>TinyApp</title>
 </head>
+
 <body>
+    <header>
+        <% include ./partials/_header %>
+    </header>
     <!-- Add your EJS code here -->
     <table>
         <tr>
             <td>URL</td>
             <td>Shortened URL</td>
         </tr>
-            <tr>
-                <td> <%= urlDatabase[tinyURL] %> </td>
-                <td> <%= tinyURL %> </td>
-            </tr>
+        <tr>
+            <td>
+                <%= urlDatabase[tinyURL] %>
+            </td>
+            <td>
+                <%= tinyURL %>
+            </td>
+            <td style="padding-left: 1em">
+                <form method="POST" action="/urls/<%= tinyURL %>/">
+                    <input type="text" name="newURL">
+                    <button type="submit">Update</button>
+                </form>
+            </td>
+        </tr>
     </table>
     <a href="">Shorten a new URL!</a>
 </body>
+
 </html>

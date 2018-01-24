@@ -11,8 +11,9 @@
             </tr>
             <% for(let url in urlList) { %>
                 <tr>
-                    <td> <%= urlList[url] %> </td>
-                    <td> <%= url %> </td>
+                    <td style="padding-right: 1em"> <%= urlList[url] %> </td>
+                    <td style="padding-right: 1em"> <%= url %> </td>
+                    <td style="padding-left: 1em"><form id="deleteURL" method="POST" action="/urls/<%= url %>/delete"><button type="submit" form="deleteURL">Delete URL <i class="icon-trash icon-small"></i></button></form></td>
                 </tr>
             <% }; %>
         </table>
