@@ -34,10 +34,10 @@
                         <td>
                             <div class="popup">
                                 <form id="deleteURL" method="POST" action="/urls/<%= url %>/delete">
-                                    <button type="submit" form="deleteURL" onClick="deleteURL()">DeleteURL
+                                    <button type="submit" form="deleteURL" id ="<%= url %>" onClick="deleteURL(this.id)">DeleteURL
                                         <i class="icon-trash icon-small"></i>
-                                        <span class="popuptext" id="myPopup">Deleting forever...</span>
                                     </button>
+                                    <span class="popuptext" id="myPopup<%= url %>">Deleting forever...</span>
                                 </form>
                             </div>
                         </td>
@@ -48,9 +48,9 @@
         <a href="/urls/new">Shorten a new URL!</a>
     </div>
     <script>
-        function deleteURL() {
+        function deleteURL(id) {
             console.log("CALLING")
-            var popup = document.getElementById("myPopup");
+            var popup = document.getElementById("myPopup"+id);
             popup.classList.toggle("show");
         }
     </script>
