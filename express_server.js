@@ -4,6 +4,7 @@ const PORT = process.env.PORT || 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser')
 
+app.use(express.static('public'))
 app.set("view engine", "ejs")
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({
@@ -43,10 +44,10 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-    console.log(req.body); // debug statement to see POST parameters
+    // console.log(req.body); // debug statement to see POST parameters
     var tinyURL = generateRandomString();
     urlDatabase[tinyURL] = req.body.longURL;
-    console.log("Database updated\n", urlDatabase);
+    // console.log("Database updated\n", urlDatabase);
     //TODO: CHECK STATUS CODE
     res.status(302).redirect(`http://localhost:8080/urls/${tinyURL}`);
 });
@@ -61,7 +62,7 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.post("/urls/:id", (req, res) => {
-    console.log(req.params.id, req.body.newURL);
+    // console.log(req.params.id, req.body.newURL);
     urlDatabase[req.params.id] = req.body.newURL;
 
     res.status(301).redirect('http://localhost:8080/urls/');
@@ -69,11 +70,11 @@ app.post("/urls/:id", (req, res) => {
 
 app.post("/urls/:id/delete", (req, res) => {
     delete urlDatabase[req.params.id];
-    res.status(301).redirect('http://localhost:8080/urls/');
+    setTimeout(function(){res.status(301).redirect('http://localhost:8080/urls/')}, 1000);
 });
 
 app.post("/login", (req, res) => {
-    console.log("HERE");
+    // console.log("HERE");
     res.cookie("username", req.body.username);
     res.status(301).redirect('http://localhost:8080/urls/');
 });

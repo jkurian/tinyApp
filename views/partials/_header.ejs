@@ -1,8 +1,8 @@
-<h1>TinyApp</h1>
+<h1 id="title">TinyApp</h1>
 <% if(username){ %>
-    <h1><%= username%></h1>
+    <h3>Welcome <%= username%>!</h3>
     <form method="POST" action="/logout">
-        <button type="submit">Logout</button>
+        <button type="submit" value="Logout"></button>
     </form>
   <% } else{ %>  
     <form method="POST" action="/login">

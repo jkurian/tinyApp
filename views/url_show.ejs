@@ -6,18 +6,23 @@
 </head>
 
 <body>
-    <header>
-        <% include ./partials/_header %>
-    </header>
-    <!-- Add your EJS code here -->
-    <h2>
-        Short URL:  <%= tinyURL %>
-    </h2>
-    <form method="POST" action="/urls/<%= tinyURL %>/">
-        <input type="text" name="newURL">
-        <button type="submit">Update</button>
-    </form>
-    <a href="">Shorten a new URL!</a>
+    <div id="containerFull">
+        <header>
+            <% include ./partials/_header %>
+        </header>
+        <!-- Add your EJS code here -->
+        <div id="urlShow">
+            <h5 id="shortURL">Short URL: </h5>
+            <h2 id="shortURL">
+                <%= tinyURL %>
+            </h2>
+            <form method="POST" action="/urls/<%= tinyURL %>/">
+                <input style="width: 20em" type="text" name="newURL" placeholder="<%= urlDatabase[tinyURL] %>">
+                <button type="submit">Update</button>
+            </form>
+            <a href="/urls/new">Shorten a new URL!</a>
+        </div>
+    </div>
 </body>
 
 </html>
