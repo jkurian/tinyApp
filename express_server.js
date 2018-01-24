@@ -2,9 +2,10 @@ const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 8080; // default port 8080
 const bodyParser = require("body-parser");
+const cookieParser = require('cookie-parser')
 
 app.set("view engine", "ejs")
-
+app.use(cookieParser());
 app.use(bodyParser.urlencoded({
     extended: true
 }));
@@ -16,13 +17,17 @@ var urlDatabase = {
 
 app.get('/urls', (req, res) => {
     let templateVars = {
-        urlList: urlDatabase
+        urlList: urlDatabase,
+        username: req.cookies.username
     };
     res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new/", (req, res) => {
-    res.render("urls_new");
+    let templateVars = {
+        username: req.cookies.username
+    }
+    res.render("urls_new", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -49,7 +54,8 @@ app.post("/urls", (req, res) => {
 app.get("/urls/:id", (req, res) => {
     let templateVars = {
         tinyURL: req.params.id,
-        urlDatabase: urlDatabase
+        urlDatabase: urlDatabase,
+        username: req.cookies.username
     };
     res.render("url_show", templateVars);
 });
@@ -67,8 +73,13 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-    res.cookie = req.body.username;
+    console.log("HERE");
+    res.cookie("username", req.body.username);
     res.status(301).redirect('http://localhost:8080/urls/');
+});
+
+app.post("/logout", (req, res) => {
+    res.status(301).clearCookie("username").redirect('http://localhost:8080/urls/');
 });
 
 app.listen(PORT, () => {
