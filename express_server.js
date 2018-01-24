@@ -66,6 +66,11 @@ app.post("/urls/:id/delete", (req, res) => {
     res.status(301).redirect('http://localhost:8080/urls/');
 });
 
+app.post("/login", (req, res) => {
+    res.cookie = req.body.username;
+    res.status(301).redirect('http://localhost:8080/urls/');
+});
+
 app.listen(PORT, () => {
     console.log(`Example app listening on port ${PORT}!`);
 });
