@@ -15,30 +15,87 @@ var urlDatabase = {
     "b2xVn2": "http://www.lighthouselabs.ca",
     "9sm5xK": "http://www.google.com"
 };
+const users = {
+    "userRandomID": {
+        id: "userRandomID",
+        email: "user@example.com",
+        password: "purple-monkey-dinosaur"
+    },
+    "user2RandomID": {
+        id: "user2RandomID",
+        email: "user2@example.com",
+        password: "dishwasher-funk"
+    }
+}
 
 app.get('/urls', (req, res) => {
     let templateVars = {
         urlList: urlDatabase,
-        username: req.cookies.username
+        user: users[req.cookies["user_id"]]
     };
     res.render("urls_index", templateVars);
 });
+app.get('/login', (req, res) => {
+    res.render("login");
+});
+
+app.post('/login', (req, res) => {
+    // console.log('attempting');
+    let attemptLogin;
+    let flag = false;
+    for(let user in users) {
+        if(users[user].email === req.body.email){
+            // console.log("found you!")
+            attemptLogin = users[user];
+            flag = true;
+            break;
+        }
+    }
+    if(!flag){
+       return res.status(403).send();
+    }
+    // console.log(req.body);
+    if(req.body.password !== attemptLogin.password) {
+        return res.status(403).send();
+    }
+
+    res.cookie('user_id', attemptLogin.id).redirect("http://localhost:8080/urls/");
+});
 
 app.get('/register', (req, res) => {
-
     res.render('register');
+});
+app.post('/register', (req, res) => {
+    //console.log(users);
+    if(!req.body.email || !req.body.password) {
+       return res.status(400).send();
+    } 
+    for(let user in users) {
+       if(users[user].email === req.body.email) {
+            return res.status(400).send();
+         }
+    }
+    let userID = generateRandomString();
+    users[userID] = {
+        id: userID,
+        email: req.body.email,
+        password: req.body.password
+    }
+
+    res.cookie("user_id", userID);
+    res.status(301).redirect("http://localhost:8080/urls/");
 });
 
 app.get("/urls/new/", (req, res) => {
     let templateVars = {
-        username: req.cookies.username
+        user: users[req.cookies["user_id"]]
     }
     res.status(200).render("urls_new", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
     //if the requested URL doesnt exist
-    if(!urlDatabase[req.url.slice(3)]) {
+    if (!urlDatabase[req.url.slice(3)]) {
         console.log('That is not a valid tiny-url!');
         // res.status(303).send('Invalid URL. Please double check the URL.');
         res.status(302).redirect('/urls/new');
@@ -61,7 +118,7 @@ app.get("/urls/:id", (req, res) => {
     let templateVars = {
         tinyURL: req.params.id,
         urlDatabase: urlDatabase,
-        username: req.cookies.username
+        user: users[req.cookies["user_id"]]
     };
     res.render("url_show", templateVars);
 });
@@ -75,21 +132,17 @@ app.post("/urls/:id", (req, res) => {
 
 app.post("/urls/:id/delete", (req, res) => {
     delete urlDatabase[req.params.id];
-    setTimeout(function(){res.status(301).redirect('http://localhost:8080/urls/')}, 1000);
-});
-
-app.post("/login", (req, res) => {
-    // console.log("HERE");
-    res.cookie("username", req.body.username);
-    res.status(301).redirect('http://localhost:8080/urls/');
+    setTimeout(function () {
+        res.status(301).redirect('http://localhost:8080/urls/')
+    }, 1000);
 });
 
 app.post("/logout", (req, res) => {
-    res.status(301).clearCookie("username").redirect('http://localhost:8080/urls/');
+    res.status(301).clearCookie("user_id").redirect('http://localhost:8080/urls/');
 });
 
 app.listen(PORT, () => {
-    console.log(`Example app listening on port ${PORT}!`);
+    console.log(`tinyApp listening on port ${PORT}!`);
 });
 
 function generateRandomString() {
