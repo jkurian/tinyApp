@@ -87,9 +87,13 @@ app.post('/register', (req, res) => {
 });
 
 app.get("/urls/new/", (req, res) => {
+    if(req.cookies["user_id"] === undefined) {
+        res.status(403).render("login");
+    }
     let templateVars = {
         user: users[req.cookies["user_id"]]
     }
+    
     res.status(200).render("urls_new", templateVars);
 });
 

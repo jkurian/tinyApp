@@ -45,7 +45,9 @@
                     <% }; %>
             </tbody>
         </table>
-        <a href="/urls/new">Shorten a new URL!</a>
+        <form id='addNewURL' method="GET" action='/urls/new/'>
+            <button type='submit' form="addNewURL">Shorten a new URL!</button>
+        </form>
     </div>
     <script>
         function deleteURL(id) {
