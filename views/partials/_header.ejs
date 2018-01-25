@@ -2,14 +2,14 @@
 <% if(user){ %>
     <h3>Welcome <%= user.email %>!</h3>
     <form method="POST" action="/logout">
-        <button type="submit" value="Logout">Logout</button>
+        <button class='btn btn-danger logout' type="submit" value="Logout">Logout</button>
     </form>
   <% } else{ %>  
     <form style="display: inline-block" method="GET" action="/login">
-        <button type="submit">Login</button>
+        <button class='btn btn-info' type="submit">Login</button>
     </form>
     <form style="display: inline-block" method="GET" action="/register">
-        <button type="submit">Register</button>
+        <button class='btn btn-info' type="submit">Register</button>
     </form>
     <h6>Please login or register to use this service!</h6>
  <% } %>

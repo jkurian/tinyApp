@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ./partials/_head %>
+</head>
+
+<body>
+    <h1 class="errors">
+        <%= message %>
+    </h1>
+    <form action="<%= sendTo %>" method="GET" style="margin:150px;">
+        <button class="btn btn-success" type="submit">Take me back!</button>
+    </form>
+</body>
+
+</html>

@@ -17,6 +17,7 @@
                     <th>Shortened URLs</th>
                     <th>Edit URL</th>
                     <th>Delete URL</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -32,13 +33,15 @@
                             <a href="/urls/<%= url %>">Edit</a>
                         </td>
                         <td>
+                            <form id="deleteURL" method="POST" action="/urls/<%= url %>/delete">
+                                <button class="btn btn-danger" type="submit" form="deleteURL" id="<%= url %>" onClick="deleteURL(this.id)">DeleteURL
+                                    <i class="icon-trash icon-small"></i>
+                                </button>
+                            </form>
+                        </td>
+                        <td>
                             <div class="popup">
-                                <form id="deleteURL" method="POST" action="/urls/<%= url %>/delete">
-                                    <button type="submit" form="deleteURL" id ="<%= url %>" onClick="deleteURL(this.id)">DeleteURL
-                                        <i class="icon-trash icon-small"></i>
-                                    </button>
-                                    <span class="popuptext" id="myPopup<%= url %>">Deleting forever...</span>
-                                </form>
+                                <span class="popuptext" id="myPopup<%= url %>">Deleting forever...</span>
                             </div>
                         </td>
                     </tr>
@@ -46,13 +49,13 @@
             </tbody>
         </table>
         <form id='addNewURL' method="GET" action='/urls/new/'>
-            <button type='submit' form="addNewURL">Shorten a new URL!</button>
+            <button class="btn btn-primary newURL" type='submit' form="addNewURL">Shorten a new URL!</button>
         </form>
     </div>
     <script>
         function deleteURL(id) {
             console.log("CALLING")
-            var popup = document.getElementById("myPopup"+id);
+            var popup = document.getElementById("myPopup" + id);
             popup.classList.toggle("show");
         }
     </script>
