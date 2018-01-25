@@ -2,7 +2,6 @@ const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 8080;
 const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser')
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session')
 
@@ -73,7 +72,6 @@ function checkLoggedIn(req, res, next) {
 app.set('view engine', 'ejs')
 
 app.use(express.static('public'))
-app.use(cookieParser());
 app.use(cookieSession({
     name: 'session',
     keys: ['key1', 'key2', 'key3'],
@@ -240,6 +238,7 @@ app.get('/u/:shortURL', (req, res) => {
         res.status(302).render('errors', errorMessage);
     } else {
         let longURL = urlDatabase[req.session.user_id][req.params.shortURL];
+        console.log(longURL);
         res.redirect(longURL);
     }
 });
