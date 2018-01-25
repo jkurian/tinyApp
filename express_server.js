@@ -12,8 +12,13 @@ app.use(bodyParser.urlencoded({
 }));
 
 var urlDatabase = {
-    "b2xVn2": "http://www.lighthouselabs.ca",
-    "9sm5xK": "http://www.google.com"
+    userRandomID: {
+        "b2xVn2": "http://www.lighthouselabs.ca",
+        "9sm5xK": "http://www.google.com"
+    },
+    user2RandomID: {
+        "test": "test.come"
+    }
 };
 const users = {
     "userRandomID": {
@@ -30,7 +35,7 @@ const users = {
 
 app.get('/urls', (req, res) => {
     let templateVars = {
-        urlList: urlDatabase,
+        urlList: urlDatabase[req.cookies["user_id"]],
         user: users[req.cookies["user_id"]]
     };
     res.render("urls_index", templateVars);
@@ -43,19 +48,19 @@ app.post('/login', (req, res) => {
     // console.log('attempting');
     let attemptLogin;
     let flag = false;
-    for(let user in users) {
-        if(users[user].email === req.body.email){
+    for (let user in users) {
+        if (users[user].email === req.body.email) {
             // console.log("found you!")
             attemptLogin = users[user];
             flag = true;
             break;
         }
     }
-    if(!flag){
-       return res.status(403).send();
+    if (!flag) {
+        return res.status(403).send();
     }
     // console.log(req.body);
-    if(req.body.password !== attemptLogin.password) {
+    if (req.body.password !== attemptLogin.password) {
         return res.status(403).send();
     }
 
@@ -67,13 +72,13 @@ app.get('/register', (req, res) => {
 });
 app.post('/register', (req, res) => {
     //console.log(users);
-    if(!req.body.email || !req.body.password) {
-       return res.status(400).send();
-    } 
-    for(let user in users) {
-       if(users[user].email === req.body.email) {
+    if (!req.body.email || !req.body.password) {
+        return res.status(400).send();
+    }
+    for (let user in users) {
+        if (users[user].email === req.body.email) {
             return res.status(400).send();
-         }
+        }
     }
     let userID = generateRandomString();
     users[userID] = {
@@ -87,41 +92,42 @@ app.post('/register', (req, res) => {
 });
 
 app.get("/urls/new/", (req, res) => {
-    if(req.cookies["user_id"] === undefined) {
+    if (req.cookies["user_id"] === undefined) {
         res.status(403).render("login");
     }
     let templateVars = {
         user: users[req.cookies["user_id"]]
     }
-    
+
     res.status(200).render("urls_new", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
     //if the requested URL doesnt exist
-    if (!urlDatabase[req.url.slice(3)]) {
+    if (!urlDatabase[req.cookies["user_id"]][req.url.slice(3)]) {
         console.log('That is not a valid tiny-url!');
         // res.status(303).send('Invalid URL. Please double check the URL.');
         res.status(302).redirect('/urls/new');
     } else {
-        let longURL = urlDatabase[req.url.slice(3)];
+        let longURL = urlDatabase[req.cookies["user_id"]][req.url.slice(3)];
         res.redirect(longURL);
     }
 });
 
 app.post("/urls", (req, res) => {
     // console.log(req.body); // debug statement to see POST parameters
+    console.log(req.cookies);
     var tinyURL = generateRandomString();
-    urlDatabase[tinyURL] = req.body.longURL;
+    urlDatabase[req.cookies["user_id"]][tinyURL] = req.body.longURL;
     // console.log("Database updated\n", urlDatabase);
-    //TODO: CHECK STATUS CODE
+    // TODO: CHECK STATUS CODE
     res.status(302).redirect(`http://localhost:8080/urls/${tinyURL}`);
 });
 
 app.get("/urls/:id", (req, res) => {
     let templateVars = {
         tinyURL: req.params.id,
-        urlDatabase: urlDatabase,
+        urlDatabase: urlDatabase[req.cookies["user_id"]],
         user: users[req.cookies["user_id"]]
     };
     res.render("url_show", templateVars);
@@ -129,13 +135,14 @@ app.get("/urls/:id", (req, res) => {
 
 app.post("/urls/:id", (req, res) => {
     // console.log(req.params.id, req.body.newURL);
-    urlDatabase[req.params.id] = req.body.newURL;
+    urlDatabase[req.cookies["user_id"]][req.params.id] = req.body.newURL;
 
     res.status(301).redirect('http://localhost:8080/urls/');
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-    delete urlDatabase[req.params.id];
+    console.log(req.cookies["user_id"]);
+    delete urlDatabase[req.cookies["user_id"]][req.params.id];
     setTimeout(function () {
         res.status(301).redirect('http://localhost:8080/urls/')
     }, 1000);
