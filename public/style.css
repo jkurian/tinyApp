@@ -12,6 +12,9 @@
 .newURL {
     margin-top: 1em;
 }
+.errors {
+    text-align: center;
+}
 .goToRegister {
     display: inline-block;
 }

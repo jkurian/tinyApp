@@ -3,7 +3,10 @@
 - tinyApp is a full stack web application build with Node and Express that allows users to shorten long URLs
 
 ## Final Product
-![screenshot](/screenshots/GenerateURL.png)
+!["screenshot of login/register page"](/docs/Login.png)
+!["screenshot of urls_index page"](/docs/Index.png)
+!["screenshot of urls_new page"](/docs/GenerateURL.png)
+!["screenshot of urls_show page"](/docs/UpdateURL.png)
 
 * In order to use a short URL, follow the `localhost:8080/u/tinyurl` 
 link

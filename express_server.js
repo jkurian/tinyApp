@@ -53,7 +53,7 @@ String.prototype.hashCode = function () {
 
 //Check if user is currently logged in
 function checkLoggedIn(req, res, next) {
-    if (req.path.match(/login|register/)) {
+    if (req.path.match(/login|register|\//)) {
         next();
         return;
     }
@@ -92,9 +92,9 @@ app.use(checkLoggedIn);
 // if user is not logged in --> redirect to login
 app.get('/', (req, res) => {
     if (req.session.user_id) {
-        res.redirect('/urls')
+        res.redirect('http://localhost:8080/urls')
     } else {
-        res.redirect('login')
+        res.redirect('http://localhost:8080/login')
     }
 })
 
@@ -123,7 +123,7 @@ app.get('/login', (req, res) => {
     if (req.session.user_id) {
         res.redirect('urls');
     }
-    res.render('login');
+    res.render('/login');
 });
 
 //Checks if the user email and login infomation match, if it does then 
@@ -171,7 +171,7 @@ app.post('/login', (req, res) => {
 // If not, we redirect them to register
 app.get('/register', (req, res) => {
     if (req.session.user_id) {
-        res.redirect('urls');
+        res.redirect('http://localhost:8080/urls');
     }
     res.render('register');
 });
@@ -216,7 +216,7 @@ app.post('/register', (req, res) => {
 //the urls_new page with the user object passed to the urls_new.ejs
 app.get('/urls/new/', (req, res) => {
     if (req.session.user_id === undefined) {
-        res.status(403).redirect('login');
+        res.status(403).redirect('http://localhost:8080/login');
     }
     let templateVars = {
         user: users[req.session.user_id]
@@ -281,7 +281,7 @@ app.get('/urls/:id', (req, res) => {
 //to that person and find the URL associated to that hash and we update the value
 //of it to the new URL the user wants to link to.
 app.post('/urls/:id', (req, res) => {
-    if(!req.sessions.user_id) {
+    if(!req.session.user_id) {
         var errorMessage = {
             message: 'You have not created that tinyURL!',
             sendTo: '/'
