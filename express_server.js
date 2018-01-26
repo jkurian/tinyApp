@@ -56,6 +56,13 @@ String.prototype.hashCode = function () {
     return hash.toString(32);
 }
 
+function generateErrorMessage(message, redirectPath) {
+    let errorObject = {
+        message: message,
+        sendTo: redirectPath
+    }
+    return errorObject;
+}
 //Check if user is currently logged in
 //needs refactoring
 function checkLoggedIn(req, res, next) {
@@ -68,12 +75,7 @@ function checkLoggedIn(req, res, next) {
         //other then the login, register or / page (if they are we send them to the error page 
         //and tell them to log in first)
         if (!req.path.match(/^\/login\/?$|^\/register\/?$|^\/?$|\/u\//)) {
-            console.log("logged in first!");
-            let errorMessage = {
-                message: 'Please login first!',
-                sendTo: '/login'
-            }
-            res.render('errors', errorMessage);
+            res.render('errors', generateErrorMessage('Please login first!', '/login'));
         } else {
             console.log("allowed!");
             next();
@@ -136,9 +138,9 @@ app.post('/urls', (req, res) => {
 app.get('/login', (req, res) => {
     console.log("in login GET");
     if (!req.session.user_id) {
-        res.render('login');
+        res.status(200).render('login');
     } else {
-        res.redirect('http://localhost:8080/urls/');
+        res.status(302).redirect('http://localhost:8080/urls/');
     }
 });
 
@@ -161,25 +163,17 @@ app.post('/login', (req, res) => {
     }
     //if the flag is true, then we found the user object
     if (!flag) {
-        let errorMessage = {
-            message: 'Sorry, your login information is incorrect.',
-            sendTo: 'login'
-        }
-        res.render('errors', errorMessage);
+        res.status(401).render('errors', generateErrorMessage('Sorry, your login information is incorrect.','login'));
     }
     //if the password inputted and password of the user object do not match
     //then we render an error page with the appropriate error message
     if (!bcrypt.compareSync(req.body.password, attemptLogin.password)) {
-        let errorMessage = {
-            message: 'Sorry, your login information is incorrect.',
-            sendTo: 'login'
-        }
-        res.render('errors', errorMessage);
+        res.status(401).render('errors', generateErrorMessage('Sorry, your login information is incorrect.','login'));
     }
     //if we get here, the user password and email have matched and we redirect the user
     //to the urls page
     req.session.user_id = attemptLogin.id;
-    res.redirect('http://localhost:8080/urls/');
+    res.status(302).redirect('http://localhost:8080/urls/');
 });
 
 //when the register page is accessed with a GET request.
@@ -187,9 +181,9 @@ app.post('/login', (req, res) => {
 // If not, we redirect them to register
 app.get('/register', (req, res) => {
     if (req.session.user_id) {
-        res.redirect('http://localhost:8080/urls');
+        res.status(302).redirect('http://localhost:8080/urls');
     }
-    res.render('register');
+    res.status(200).render('register');
 });
 
 //When the user presses the submit button on the register page, we first clear
@@ -201,19 +195,11 @@ app.get('/register', (req, res) => {
 app.post('/register', (req, res) => {
     delete req.session.user_id;
     if (!req.body.email || !req.body.password) {
-        let errorMessage = {
-            message: 'Do not leave anything blank....',
-            sendTo: 'register'
-        }
-        res.render('errors', errorMessage);
+        res.status(401).render('errors', generateErrorMessage('Do not leave anything blank!','register'));
     }
     for (let user in users) {
         if (users[user].email === req.body.email) {
-            let errorMessage = {
-                message: 'That email is taken!',
-                sendTo: 'register'
-            }
-            res.render('errors', errorMessage);
+            res.status(401).render('errors', generateErrorMessage('That email is taken!', 'register'));
         }
     }
     let userID = generateRandomString();
@@ -224,7 +210,7 @@ app.post('/register', (req, res) => {
     }
     urlPerUserDatabase[userID] = {};
     req.session.user_id = userID;
-    res.status(301).redirect('http://localhost:8080/urls/');
+    res.status(302).redirect('http://localhost:8080/urls/');
 });
 
 //If there is a GET to urls/new, we first check if the user is logged in.
@@ -232,7 +218,7 @@ app.post('/register', (req, res) => {
 //the urls_new page with the user object passed to the urls_new.ejs
 app.get('/urls/new/', (req, res) => {
     if (req.session.user_id === undefined) {
-        res.status(403).redirect('http://localhost:8080/login');
+        res.status(302).redirect('http://localhost:8080/login');
     }
     let templatelets = {
         user: users[req.session.user_id]
@@ -246,13 +232,6 @@ app.get('/urls/new/', (req, res) => {
 //If the tinyURL is present in the urlPerUserDatabase, then we redirect the user to
 //the longURL assosciated with that key
 app.get('/u/:shortURL', (req, res) => {
-    // if (!urlPerUserDatabase[req.session.user_id][req.params.shortURL]) {
-    //     let errorMessage = {
-    //         message: 'That tinyURL does not exist!',
-    //         sendTo: 'urls'
-    //     }
-    //     res.status(302).render('errors', errorMessage);
-    // } else {
     if (!allURLS[req.params.shortURL]) {
         let redirect = '';
         if (req.session.id) {
@@ -260,14 +239,10 @@ app.get('/u/:shortURL', (req, res) => {
         } else {
             redirect = '/login'
         }
-        let errorMessage = {
-            message: 'That tinyURL does not exist!',
-            sendTo: redirect
-        }
-        res.status(302).render('errors', errorMessage);
+        res.status(400).render('errors', generateErrorMessage('That tinyURL does not exist!', redirect));
     } else {
         let longURL = allURLS[req.params.shortURL];
-        res.redirect(longURL);
+        res.status(302).redirect(longURL);
     }
 });
 
@@ -281,26 +256,18 @@ app.get('/u/:shortURL', (req, res) => {
 app.get('/urls/:id', (req, res) => {
     let usersURLs = urlPerUserDatabase[req.session.user_id];
     if (usersURLs === undefined) {
-        let errorMessage = {
-            message: 'Please login first!',
-            sendTo: '/'
-        }
-        return res.render('errors', errorMessage);
+        return res.status(401).render('errors', generateErrorMessage('please login first!', '/'));
     }
     //TODO: Review this piece of code
     if (!usersURLs.hasOwnProperty(req.params.id)) {
-        let errorMessage = {
-            message: 'You have not created that tinyURL!',
-            sendTo: '/'
-        }
-        return res.render('errors', errorMessage);
+        return res.status(400).render('errors', generateErrorMessage('You have not created that tinyURL!','/'));
     }
     let templatelets = {
         tinyURL: req.params.id,
         urlPerUserDatabase: urlPerUserDatabase[req.session.user_id],
         user: users[req.session.user_id]
     };
-    res.render('url_show', templatelets);
+    res.stauts(200).render('url_show', templatelets);
 });
 
 //When a user tries to POST a new URL to the database, we first check if 
@@ -310,15 +277,11 @@ app.get('/urls/:id', (req, res) => {
 //of it to the new URL the user wants to link to.
 app.post('/urls/:id', (req, res) => {
     if (!req.session.user_id) {
-        let errorMessage = {
-            message: 'You have not created that tinyURL!',
-            sendTo: '/'
-        }
-        return res.render('errors', errorMessage);
+        return res.status(200).render('errors', generateErrorMessage('You have not created that tinyURL!', '/'));
     }
     urlPerUserDatabase[req.session.user_id][req.params.id] = req.body.newURL;
     allURLS[req.params.id] = req.body.newURL;
-    res.status(301).redirect('http://localhost:8080/urls/');
+    res.status(302).redirect('http://localhost:8080/urls/');
 });
 
 //If the user clicks the delete button on url_index.ejs, then we delete
@@ -328,7 +291,7 @@ app.post('/urls/:id/delete', (req, res) => {
     delete urlPerUserDatabase[req.session.user_id][req.params.id];
     delete allURLS[req.params.id];
     setTimeout(function () {
-        res.status(301).redirect('http://localhost:8080/urls/')
+        res.status(302).redirect('http://localhost:8080/urls/')
     }, 1000);
 });
 
@@ -336,7 +299,7 @@ app.post('/urls/:id/delete', (req, res) => {
 //to login
 app.post('/logout', (req, res) => {
     delete req.session.user_id;
-    res.status(301).redirect('http://localhost:8080/login/');
+    res.status(302).redirect('http://localhost:8080/login/');
 });
 
 //Listening to the specified port
