@@ -136,7 +136,7 @@ function checkLoggedIn(req, res, next) {
         next();
     } else {
         //This regular expression tests for if the user is trying to access anything 
-        //other then the login, register or / page (if they are we send them to the error page 
+        //other then the login, register or /u/ or / page (if they are we send them to the error page 
         //and tell them to log in first)
         if (!req.path.match(/^\/login\/?$|^\/register\/?$|^\/?$|\/u\//)) {
             res.render('errors', generateErrorMessage('Please login first!', '/login'));
