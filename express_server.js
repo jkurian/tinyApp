@@ -193,6 +193,7 @@ app.get('/urls', (req, res) => {
 //handle a post form sent to /urls. Essentially generates a new URL,
 //adds this url/tinurl to the urlDarabase and redirects the user to /urls/tinyURL.
 app.post('/urls', (req, res) => {
+    //Check the URL here with a regex if you have
     let tinyURL = generateRandomString();
     urlPerUserDatabase[req.session.user_id][tinyURL] = req.body.longURL;
     allURLS[tinyURL] = allURLS[tinyURL] || { };
@@ -233,7 +234,7 @@ app.post('/login', (req, res) => {
     }
     //if the flag is true, then we found the user object
     if (!flag) {
-        res.status(401).render('errors', generateErrorMessage('Sorry, your login information is incorrect.', 'login'));
+        res.status(403).render('errors', generateErrorMessage('Sorry, your login information is incorrect.', 'login'));
     } else if (!bcrypt.compareSync(req.body.password, attemptLogin.password)) {
         //if the password inputted and password of the user object do not match
         //then we render an error page with the appropriate error message
@@ -300,7 +301,10 @@ app.get('/urls/new/', (req, res) => {
 //If the tinyURL is present in the urlPerUserDatabase, then we redirect the user to
 //the longURL assosciated with that key
 app.get('/u/:shortURL', (req, res) => {
+    console.log(allURLS[req.params.shortURL]);
+    console.log(req.params.shortURL);
     if (!allURLS[req.params.shortURL]) {
+        console.log("tinyURL does not exist");
         let redirect = '';
         if (req.session.id) {
             redirect = '/urls'
@@ -311,6 +315,7 @@ app.get('/u/:shortURL', (req, res) => {
     } else {
         let longURL = allURLS[req.params.shortURL].longURL;
         allURLS[req.params.shortURL].totalVisits++;
+        console.log("in else, longURL is", longURL)
         res.status(302).redirect(longURL);
     }
 });
@@ -367,7 +372,7 @@ app.post('/urls/:id', (req, res) => {
 //if the user clicks the logout button, then we delete the cookie and redirect them
 //to login
 app.post('/logout', (req, res) => {
-    delete req.session.user_id;
+    req.session = null;
     res.status(302).redirect('http://localhost:8080/login/');
 });
 
