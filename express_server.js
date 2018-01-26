@@ -19,15 +19,15 @@ const urlPerUserDatabase = {
 const allURLS = {
     'b2xVn2': {
         longURL: 'http://www.lighthouselabs.ca',
-        date: "DATE1"
+        date: "DATE1EXAMPLE"
     },
     '9sm5xK': {
         longURL: 'http://www.google.com',
-        date: "DATE2"        
+        date: "DATE2EXAMPLE"        
     },
     'test': {
         longURL: 'test.com',
-        date: "DATE3"  
+        date: "DATE3EXAMPLE"  
     }
 }
 //stores all our users information
@@ -107,6 +107,23 @@ function setUpNewUser(req) {
     urlPerUserDatabase[userID] = {};
     req.session.user_id = userID;
 }
+
+function getDateCreated() {
+    let today = new Date();
+    let dd = today.getDate();
+    let mm = today.getMonth()+1; //Because Jan = 0
+    
+    let yyyy = today.getFullYear();
+    //formate the day so that it has two digits
+    if(dd<10){
+        dd='0'+dd;
+    } 
+    if(mm<10){
+        mm='0'+mm;
+    } 
+    let formattedDate = dd+'/'+mm+'/'+yyyy;
+    return formattedDate;
+}
 //Check if user is currently logged in
 //needs refactoring
 function checkLoggedIn(req, res, next) {
@@ -175,7 +192,10 @@ app.get('/urls', (req, res) => {
 app.post('/urls', (req, res) => {
     let tinyURL = generateRandomString();
     urlPerUserDatabase[req.session.user_id][tinyURL] = req.body.longURL;
+    allURLS[tinyURL] = allURLS[tinyURL] || { };
     allURLS[tinyURL].longURL = req.body.longURL;
+    //ADD URL DATE HERE
+    allURLS[tinyURL].date = getDateCreated();
     res.status(302).redirect(`http://localhost:8080/urls/${tinyURL}`);
 });
 
