@@ -4,7 +4,7 @@ const PORT = process.env.PORT || 8080;
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session')
-
+const methodOverride = require('method-override')
 //Stores all our users tiny URLS
 const urlPerUserDatabase = {
     userRandomID: {
@@ -132,6 +132,7 @@ app.use(cookieSession({
 app.use(bodyParser.urlencoded({
     extended: true
 }));
+app.use(methodOverride('_method'))
 app.use(checkLoggedIn);
 
 
@@ -303,6 +304,17 @@ app.get('/urls/:id', (req, res) => {
     res.status(200).render('url_show', templateVars);
 });
 
+//If the user clicks the delete button on url_index.ejs, then we delete
+//that entry in the urlPerUserDatabase associated to that user with the specified hash
+//We have a setTimeout here to show the popup before the page redirects
+app.delete('/urls/:id/delete', (req, res) => {
+    delete urlPerUserDatabase[req.session.user_id][req.params.id];
+    delete allURLS[req.params.id];
+    setTimeout(function () {
+        res.status(302).redirect('http://localhost:8080/urls/')
+    }, 1000);
+});
+
 //When a user tries to POST a new URL to the database, we first check if 
 //they are logged in, if not send them to errors.ejs.
 //If they are logged in we get their orresponding urlPerUserDatabase object associated 
@@ -315,17 +327,6 @@ app.post('/urls/:id', (req, res) => {
     urlPerUserDatabase[req.session.user_id][req.params.id] = req.body.newURL;
     allURLS[req.params.id] = req.body.newURL;
     res.status(302).redirect('http://localhost:8080/urls/');
-});
-
-//If the user clicks the delete button on url_index.ejs, then we delete
-//that entry in the urlPerUserDatabase associated to that user with the specified hash
-//We have a setTimeout here to show the popup before the page redirects
-app.post('/urls/:id/delete', (req, res) => {
-    delete urlPerUserDatabase[req.session.user_id][req.params.id];
-    delete allURLS[req.params.id];
-    setTimeout(function () {
-        res.status(302).redirect('http://localhost:8080/urls/')
-    }, 1000);
 });
 
 //if the user clicks the logout button, then we delete the cookie and redirect them

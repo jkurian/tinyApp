@@ -33,7 +33,7 @@
                             <a href="/urls/<%= url %>">Edit</a>
                         </td>
                         <td>
-                            <form id="deleteURL" method="POST" action="/urls/<%= url %>/delete">
+                            <form id="deleteURL" method="POST" action="/urls/<%= url %>/delete?_method=DELETE">
                                 <button class="btn btn-danger" type="submit" form="deleteURL" id="<%= url %>" onClick="deleteURL(this.id)">DeleteURL
                                     <i class="icon-trash icon-small"></i>
                                 </button>
