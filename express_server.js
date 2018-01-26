@@ -55,13 +55,48 @@ String.prototype.hashCode = function () {
     }
     return hash.toString(32);
 }
-
+//Function to generate an error message object which is passed to
+//the render method to render the error.ejs page
 function generateErrorMessage(message, redirectPath) {
     let errorObject = {
         message: message,
         sendTo: redirectPath
     }
     return errorObject;
+}
+//checks if the users registration data is good 
+//returns an object wiht two properties (blankField and emailUsed), if either is true
+//the user will be redirected to the error.ejs page and be prompted
+//to try to register again
+function checkRegistrationDetails(req) {
+    let registrationDetails = { };
+    let blankField = false;
+    let emailUsed = false;
+
+    if (!req.body.email || !req.body.password) {
+        blankField = true;
+    }
+    for (let user in users) {
+        if (users[user].email === req.body.email) {
+            emailUsed = true;
+        }
+    }
+    registrationDetails.blankField = blankField;
+    registrationDetails.emailUsed = emailUsed;
+    return registrationDetails;
+}
+
+//If the user registration details are good, this will set up everything
+//needed for the user (set cookie, add to databases etc).
+function setUpNewUser(req) {
+    let userID = generateRandomString();
+    users[userID] = {
+        id: userID,
+        email: req.body.email,
+        password: bcrypt.hashSync(req.body.password, 10)
+    }
+    urlPerUserDatabase[userID] = {};
+    req.session.user_id = userID;
 }
 //Check if user is currently logged in
 //needs refactoring
@@ -163,17 +198,17 @@ app.post('/login', (req, res) => {
     }
     //if the flag is true, then we found the user object
     if (!flag) {
-        res.status(401).render('errors', generateErrorMessage('Sorry, your login information is incorrect.','login'));
+        res.status(401).render('errors', generateErrorMessage('Sorry, your login information is incorrect.', 'login'));
+    } else if (!bcrypt.compareSync(req.body.password, attemptLogin.password)) {
+        //if the password inputted and password of the user object do not match
+        //then we render an error page with the appropriate error message
+        res.status(401).render('errors', generateErrorMessage('Sorry, your login information is incorrect.', 'login'));
+    } else {
+        //if we get here, the user password and email have matched and we redirect the user
+        //to the urls page
+        req.session.user_id = attemptLogin.id;
+        res.status(302).redirect('http://localhost:8080/urls/');
     }
-    //if the password inputted and password of the user object do not match
-    //then we render an error page with the appropriate error message
-    if (!bcrypt.compareSync(req.body.password, attemptLogin.password)) {
-        res.status(401).render('errors', generateErrorMessage('Sorry, your login information is incorrect.','login'));
-    }
-    //if we get here, the user password and email have matched and we redirect the user
-    //to the urls page
-    req.session.user_id = attemptLogin.id;
-    res.status(302).redirect('http://localhost:8080/urls/');
 });
 
 //when the register page is accessed with a GET request.
@@ -182,8 +217,9 @@ app.post('/login', (req, res) => {
 app.get('/register', (req, res) => {
     if (req.session.user_id) {
         res.status(302).redirect('http://localhost:8080/urls');
+    } else {
+        res.status(200).render('register');
     }
-    res.status(200).render('register');
 });
 
 //When the user presses the submit button on the register page, we first clear
@@ -194,23 +230,20 @@ app.get('/register', (req, res) => {
 // an object for the user in the urlPerUserDatabase to track their short URLs.
 app.post('/register', (req, res) => {
     delete req.session.user_id;
-    if (!req.body.email || !req.body.password) {
-        res.status(401).render('errors', generateErrorMessage('Do not leave anything blank!','register'));
+
+    let registrationDetails = checkRegistrationDetails(req);
+    //Check if either the blankField or emailUsed properties of the registrationDetails
+    //object are true, if they are the user will not be able to register
+    if (registrationDetails.blankField) {
+        res.status(401).render('errors', generateErrorMessage('Do not leave anything blank!', 'register'));
+    } else if (registrationDetails.emailUsed) {
+        res.status(401).render('errors', generateErrorMessage('That email is taken!', 'register'));
+    } else {
+        //If we get here, the registration details are good and we can 
+        //add them to the databases and set the cookie by calling setUpNewUser
+        setUpNewUser(req);
+        res.status(302).redirect('http://localhost:8080/urls/');
     }
-    for (let user in users) {
-        if (users[user].email === req.body.email) {
-            res.status(401).render('errors', generateErrorMessage('That email is taken!', 'register'));
-        }
-    }
-    let userID = generateRandomString();
-    users[userID] = {
-        id: userID,
-        email: req.body.email,
-        password: bcrypt.hashSync(req.body.password, 10)
-    }
-    urlPerUserDatabase[userID] = {};
-    req.session.user_id = userID;
-    res.status(302).redirect('http://localhost:8080/urls/');
 });
 
 //If there is a GET to urls/new, we first check if the user is logged in.
@@ -260,14 +293,14 @@ app.get('/urls/:id', (req, res) => {
     }
     //TODO: Review this piece of code
     if (!usersURLs.hasOwnProperty(req.params.id)) {
-        return res.status(400).render('errors', generateErrorMessage('You have not created that tinyURL!','/'));
+        return res.status(400).render('errors', generateErrorMessage('You have not created that tinyURL!', '/'));
     }
-    let templatelets = {
+    let templateVars = {
         tinyURL: req.params.id,
         urlPerUserDatabase: urlPerUserDatabase[req.session.user_id],
         user: users[req.session.user_id]
     };
-    res.stauts(200).render('url_show', templatelets);
+    res.status(200).render('url_show', templateVars);
 });
 
 //When a user tries to POST a new URL to the database, we first check if 
