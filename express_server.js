@@ -61,8 +61,8 @@ function checkLoggedIn(req, res, next) {
     } else {
         const currentUser = req.session.user_id;
         if (currentUser) {
-            console.log(currentUser);
-            res.redirect('http://localhost:8080/urls');
+            console.log("currentUser logged in", currentUser);
+            next();
         } else {
             console.log("in else");
             let errorMessage = {
@@ -70,7 +70,6 @@ function checkLoggedIn(req, res, next) {
                 sendTo: '/login'
             }
             res.render('errors', errorMessage);
-            return;
         }
     }
 }
