@@ -52,14 +52,14 @@ String.prototype.hashCode = function () {
 }
 
 //Check if user is currently logged in
+//needs refactoring
 function checkLoggedIn(req, res, next) {
     if (req.path.match(/login|register|\//)) {
         next();
-        return;
     }
     const currentUser = req.session.user_id;
     if (currentUser) {
-        next();
+        res.redirect('http://localhost:8080/urls');
     } else {
         let errorMessage = {
             message: 'Please login first!',
@@ -77,7 +77,8 @@ app.use(cookieSession({
     keys: ['key1', 'key2', 'key3'],
 
     // Cookie Options
-    maxAge: 2 * 60 * 60 * 1000 // 2 hours
+    // Session length is 2 hours
+    maxAge: 2 * 60 * 60 * 1000
 }));
 app.use(bodyParser.urlencoded({
     extended: true
@@ -123,7 +124,7 @@ app.get('/login', (req, res) => {
     if (req.session.user_id) {
         res.redirect('urls');
     }
-    res.render('/login');
+    res.render('login');
 });
 
 //Checks if the user email and login infomation match, if it does then 
@@ -307,7 +308,7 @@ app.post('/urls/:id/delete', (req, res) => {
 //to login
 app.post('/logout', (req, res) => {
     delete req.session.user_id;
-    res.status(301).redirect('http://localhost:8080/login');
+    res.status(301).redirect('http://localhost:8080/login/');
 });
 
 //Listening to the specified port
