@@ -54,18 +54,24 @@ String.prototype.hashCode = function () {
 //Check if user is currently logged in
 //needs refactoring
 function checkLoggedIn(req, res, next) {
-    if (req.path.match(/login|register|\//)) {
+    //explain regex
+    if (req.path.match(/login|register|^\/$/)) {
+        console.log("path");
         next();
-    }
-    const currentUser = req.session.user_id;
-    if (currentUser) {
-        res.redirect('http://localhost:8080/urls');
     } else {
-        let errorMessage = {
-            message: 'Please login first!',
-            sendTo: '/login'
+        const currentUser = req.session.user_id;
+        if (currentUser) {
+            console.log(currentUser);
+            res.redirect('http://localhost:8080/urls');
+        } else {
+            console.log("in else");
+            let errorMessage = {
+                message: 'Please login first!',
+                sendTo: '/login'
+            }
+            res.render('errors', errorMessage);
+            return;
         }
-        res.render('errors', errorMessage);
     }
 }
 
@@ -121,10 +127,11 @@ app.post('/urls', (req, res) => {
 //if the user is logged in, then we redirect them to /urls
 //if the user is not logged in, then we render the login page
 app.get('/login', (req, res) => {
-    if (req.session.user_id) {
-        res.redirect('urls');
+    if (!req.session.user_id) {
+        res.render('login');
+    } else {
+        res.redirect('http://localhost:8080/urls/');
     }
-    res.render('login');
 });
 
 //Checks if the user email and login infomation match, if it does then 
@@ -282,7 +289,7 @@ app.get('/urls/:id', (req, res) => {
 //to that person and find the URL associated to that hash and we update the value
 //of it to the new URL the user wants to link to.
 app.post('/urls/:id', (req, res) => {
-    if(!req.session.user_id) {
+    if (!req.session.user_id) {
         var errorMessage = {
             message: 'You have not created that tinyURL!',
             sendTo: '/'
