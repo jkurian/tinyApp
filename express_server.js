@@ -38,14 +38,14 @@ const users = {
 
 //generates a random string which is used as a key
 function generateRandomString() {
-    var rand = Math.floor(Math.random() * 100000000).toString();
+    let rand = Math.floor(Math.random() * 100000000).toString();
     return rand.hashCode();
 }
 
 //default hash function implemented in javas .toHash function
 //returns a string from the hashed value
 String.prototype.hashCode = function () {
-    var hash = 0;
+    let hash = 0;
     if (this.length == 0) return hash;
     for (i = 0; i < this.length; i++) {
         char = this.charCodeAt(i);
@@ -105,7 +105,7 @@ app.use(checkLoggedIn);
 // if user is not logged in --> redirect to login
 app.get('/', (req, res) => {
     if (req.session.user_id) {
-        res.render('http://localhost:8080/urls')
+        res.redirect('http://localhost:8080/urls')
     } else {
         res.redirect('http://localhost:8080/login')
     }
@@ -115,17 +115,17 @@ app.get('/', (req, res) => {
 // Do not need to check if user is logged in because middleware does
 // that for us and redirects the user to log in.
 app.get('/urls', (req, res) => {
-    let templateVars = {
+    let templatelets = {
         urlList: urlPerUserDatabase[req.session.user_id],
         user: users[req.session.user_id]
     };
-    res.render('urls_index', templateVars);
+    res.render('urls_index', templatelets);
 });
 
 //handle a post form sent to /urls. Essentially generates a new URL,
 //adds this url/tinurl to the urlDarabase and redirects the user to /urls/tinyURL.
 app.post('/urls', (req, res) => {
-    var tinyURL = generateRandomString();
+    let tinyURL = generateRandomString();
     urlPerUserDatabase[req.session.user_id][tinyURL] = req.body.longURL;
     allURLS[tinyURL] = req.body.longURL;
     res.status(302).redirect(`http://localhost:8080/urls/${tinyURL}`);
@@ -234,11 +234,11 @@ app.get('/urls/new/', (req, res) => {
     if (req.session.user_id === undefined) {
         res.status(403).redirect('http://localhost:8080/login');
     }
-    let templateVars = {
+    let templatelets = {
         user: users[req.session.user_id]
     }
 
-    res.status(200).render('urls_new', templateVars);
+    res.status(200).render('urls_new', templatelets);
 });
 
 //When using the tinyURL, if the GET request is for a tinyURL that has not
@@ -279,9 +279,9 @@ app.get('/u/:shortURL', (req, res) => {
 //then we tell them they have not created that tinyURL
 //Otherwise we render the url_show.ejs page with the correct information
 app.get('/urls/:id', (req, res) => {
-    var usersURLs = urlPerUserDatabase[req.session.user_id];
+    let usersURLs = urlPerUserDatabase[req.session.user_id];
     if (usersURLs === undefined) {
-        var errorMessage = {
+        let errorMessage = {
             message: 'Please login first!',
             sendTo: '/'
         }
@@ -289,18 +289,18 @@ app.get('/urls/:id', (req, res) => {
     }
     //TODO: Review this piece of code
     if (!usersURLs.hasOwnProperty(req.params.id)) {
-        var errorMessage = {
+        let errorMessage = {
             message: 'You have not created that tinyURL!',
             sendTo: '/'
         }
         return res.render('errors', errorMessage);
     }
-    let templateVars = {
+    let templatelets = {
         tinyURL: req.params.id,
         urlPerUserDatabase: urlPerUserDatabase[req.session.user_id],
         user: users[req.session.user_id]
     };
-    res.render('url_show', templateVars);
+    res.render('url_show', templatelets);
 });
 
 //When a user tries to POST a new URL to the database, we first check if 
@@ -310,7 +310,7 @@ app.get('/urls/:id', (req, res) => {
 //of it to the new URL the user wants to link to.
 app.post('/urls/:id', (req, res) => {
     if (!req.session.user_id) {
-        var errorMessage = {
+        let errorMessage = {
             message: 'You have not created that tinyURL!',
             sendTo: '/'
         }
