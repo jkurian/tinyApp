@@ -15,6 +15,7 @@
                 <tr>
                     <th>URLs</th>
                     <th>Shortened URLs</th>
+                    <th>Total Views</th>
                     <th>Date Created</th>
                     <th>Edit URL</th>
                     <th>Delete URL</th>
@@ -29,6 +30,9 @@
                         </td>
                         <td>
                             <%= url %>
+                        </td>
+                        <td>
+                            <%= allURLS[url].totalVisits %>
                         </td>
                         <td>
                             <%= allURLS[url].date %>

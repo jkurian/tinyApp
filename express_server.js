@@ -19,15 +19,18 @@ const urlPerUserDatabase = {
 const allURLS = {
     'b2xVn2': {
         longURL: 'http://www.lighthouselabs.ca',
-        date: "DATE1EXAMPLE"
+        date: "DATE1EXAMPLE",
+        totalVisits: 0
     },
     '9sm5xK': {
         longURL: 'http://www.google.com',
-        date: "DATE2EXAMPLE"        
+        date: "DATE2EXAMPLE",
+        totalVisits: 0  
     },
     'test': {
         longURL: 'test.com',
-        date: "DATE3EXAMPLE"  
+        date: "DATE3EXAMPLE",
+        totalVisits: 0  
     }
 }
 //stores all our users information
@@ -194,6 +197,7 @@ app.post('/urls', (req, res) => {
     urlPerUserDatabase[req.session.user_id][tinyURL] = req.body.longURL;
     allURLS[tinyURL] = allURLS[tinyURL] || { };
     allURLS[tinyURL].longURL = req.body.longURL;
+    allURLS[tinyURL].totalVisits = allURLS[tinyURL].totalVisits || 0;
     //ADD URL DATE HERE
     allURLS[tinyURL].date = getDateCreated();
     res.status(302).redirect(`http://localhost:8080/urls/${tinyURL}`);
@@ -306,6 +310,7 @@ app.get('/u/:shortURL', (req, res) => {
         res.status(404).render('errors', generateErrorMessage('That tinyURL does not exist!', redirect));
     } else {
         let longURL = allURLS[req.params.shortURL].longURL;
+        allURLS[req.params.shortURL].totalVisits++;
         res.status(302).redirect(longURL);
     }
 });
