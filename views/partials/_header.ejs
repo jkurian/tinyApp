@@ -1,15 +1,16 @@
 <h1 id="title">TinyApp</h1>
 <% if(user){ %>
-    <h3>Welcome <%= user.email %>!</h3>
+    <h3>Welcome
+        <%= user.email %>!</h3>
     <form method="POST" action="/logout">
         <button class='btn btn-danger logout' type="submit" value="Logout">Logout</button>
     </form>
-  <% } else{ %>  
-    <form style="display: inline-block" method="GET" action="/login">
-        <button class='btn btn-info' type="submit">Login</button>
-    </form>
-    <form style="display: inline-block" method="GET" action="/register">
-        <button class='btn btn-info' type="submit">Register</button>
-    </form>
-    <h6>Please login or register to use this service!</h6>
- <% } %>
+    <% } else{ %>
+        <form style="display: inline-block" method="GET" action="/login">
+            <button class='btn btn-info' type="submit">Login</button>
+        </form>
+        <form style="display: inline-block" method="GET" action="/register">
+            <button class='btn btn-info' type="submit">Register</button>
+        </form>
+        <h6>Please login or register to use this service!</h6>
+        <% } %>

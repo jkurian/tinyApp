@@ -255,7 +255,7 @@ app.get('/u/:shortURL', (req, res) => {
     // } else {
     if (!allURLS[req.params.shortURL]) {
         let redirect = '';
-        if(req.session.id) {
+        if (req.session.id) {
             redirect = '/urls'
         } else {
             redirect = '/login'
