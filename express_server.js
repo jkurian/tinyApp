@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session')
 
 //Stores all our users tiny URLS
-const urlDatabase = {
+const urlPerUserDatabase = {
     userRandomID: {
         'b2xVn2': 'http://www.lighthouselabs.ca',
         '9sm5xK': 'http://www.google.com'
@@ -116,7 +116,7 @@ app.get('/', (req, res) => {
 // that for us and redirects the user to log in.
 app.get('/urls', (req, res) => {
     let templateVars = {
-        urlList: urlDatabase[req.session.user_id],
+        urlList: urlPerUserDatabase[req.session.user_id],
         user: users[req.session.user_id]
     };
     res.render('urls_index', templateVars);
@@ -126,7 +126,7 @@ app.get('/urls', (req, res) => {
 //adds this url/tinurl to the urlDarabase and redirects the user to /urls/tinyURL.
 app.post('/urls', (req, res) => {
     var tinyURL = generateRandomString();
-    urlDatabase[req.session.user_id][tinyURL] = req.body.longURL;
+    urlPerUserDatabase[req.session.user_id][tinyURL] = req.body.longURL;
     allURLS[tinyURL] = req.body.longURL;
     res.status(302).redirect(`http://localhost:8080/urls/${tinyURL}`);
 });
@@ -197,7 +197,7 @@ app.get('/register', (req, res) => {
 // not empty. If they are empty we render the errors.ejs page with the appropriate message.
 //Next we check if the user email has already been registered. If not,
 // then we create a new user and add it to the user database and also create
-// an object for the user in the urlDatabase to track their short URLs.
+// an object for the user in the urlPerUserDatabase to track their short URLs.
 app.post('/register', (req, res) => {
     delete req.session.user_id;
     if (!req.body.email || !req.body.password) {
@@ -222,7 +222,7 @@ app.post('/register', (req, res) => {
         email: req.body.email,
         password: bcrypt.hashSync(req.body.password, 10)
     }
-    urlDatabase[userID] = {};
+    urlPerUserDatabase[userID] = {};
     req.session.user_id = userID;
     res.status(301).redirect('http://localhost:8080/urls/');
 });
@@ -243,10 +243,10 @@ app.get('/urls/new/', (req, res) => {
 
 //When using the tinyURL, if the GET request is for a tinyURL that has not
 //been generated, then we render the error.ejs page with the appropriate message
-//If the tinyURL is present in the urlDatabase, then we redirect the user to
+//If the tinyURL is present in the urlPerUserDatabase, then we redirect the user to
 //the longURL assosciated with that key
 app.get('/u/:shortURL', (req, res) => {
-    // if (!urlDatabase[req.session.user_id][req.params.shortURL]) {
+    // if (!urlPerUserDatabase[req.session.user_id][req.params.shortURL]) {
     //     let errorMessage = {
     //         message: 'That tinyURL does not exist!',
     //         sendTo: 'urls'
@@ -271,15 +271,15 @@ app.get('/u/:shortURL', (req, res) => {
     }
 });
 
-//first we get the usersURLs from the urlDatabase
-//If this is undefined, then that user is not in the urlDatabase
+//first we get the usersURLs from the urlPerUserDatabase
+//If this is undefined, then that user is not in the urlPerUserDatabase
 //so we send them to the errors.ejs page and tell them to log in first
 //If it is not undefined, then we have to check if the url they are trying
 //to access is in their urlsDatabase object. If it is not,
 //then we tell them they have not created that tinyURL
 //Otherwise we render the url_show.ejs page with the correct information
 app.get('/urls/:id', (req, res) => {
-    var usersURLs = urlDatabase[req.session.user_id];
+    var usersURLs = urlPerUserDatabase[req.session.user_id];
     if (usersURLs === undefined) {
         var errorMessage = {
             message: 'Please login first!',
@@ -297,7 +297,7 @@ app.get('/urls/:id', (req, res) => {
     }
     let templateVars = {
         tinyURL: req.params.id,
-        urlDatabase: urlDatabase[req.session.user_id],
+        urlPerUserDatabase: urlPerUserDatabase[req.session.user_id],
         user: users[req.session.user_id]
     };
     res.render('url_show', templateVars);
@@ -305,7 +305,7 @@ app.get('/urls/:id', (req, res) => {
 
 //When a user tries to POST a new URL to the database, we first check if 
 //they are logged in, if not send them to errors.ejs.
-//If they are logged in we get their orresponding urlDatabase object associated 
+//If they are logged in we get their orresponding urlPerUserDatabase object associated 
 //to that person and find the URL associated to that hash and we update the value
 //of it to the new URL the user wants to link to.
 app.post('/urls/:id', (req, res) => {
@@ -316,16 +316,16 @@ app.post('/urls/:id', (req, res) => {
         }
         return res.render('errors', errorMessage);
     }
-    urlDatabase[req.session.user_id][req.params.id] = req.body.newURL;
+    urlPerUserDatabase[req.session.user_id][req.params.id] = req.body.newURL;
     allURLS[req.params.id] = req.body.newURL;
     res.status(301).redirect('http://localhost:8080/urls/');
 });
 
 //If the user clicks the delete button on url_index.ejs, then we delete
-//that entry in the urlDatabase associated to that user with the specified hash
+//that entry in the urlPerUserDatabase associated to that user with the specified hash
 //We have a setTimeout here to show the popup before the page redirects
 app.post('/urls/:id/delete', (req, res) => {
-    delete urlDatabase[req.session.user_id][req.params.id];
+    delete urlPerUserDatabase[req.session.user_id][req.params.id];
     delete allURLS[req.params.id];
     setTimeout(function () {
         res.status(301).redirect('http://localhost:8080/urls/')
