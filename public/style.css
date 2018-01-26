@@ -15,6 +15,9 @@
 .errors {
     text-align: center;
 }
+.home_update {
+    display: inline-block;
+}
 .goToRegister {
     display: inline-block;
 }
@@ -35,7 +38,9 @@
 #urlShow {
     text-align: center;
 }
-
+.home_update {
+    display: inline-block;
+}
 .popup {
     position: relative;
     display: inline-block;

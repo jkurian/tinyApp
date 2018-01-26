@@ -16,12 +16,22 @@
             <h2 id="shortURL">
                 <%= tinyURL %>
             </h2>
+        </div>
+        <div class="home_update">
             <form method="POST" action="/urls/<%= tinyURL %>/">
                 <input style="width: 20em" type="text" name="newURL" placeholder="Old URL: <%= urlDatabase[tinyURL] %>">
                 <button class="btn btn-primary register" type="submit">Update URL!</button>
             </form>
+        </div>
+        <div class="home_update">
+            <form method="GET" action="/urls">
+                <button type=submit class='btn btn-primary'>Go Home</button>
+            </form>
+        </div>
+        <div>
             <a href="/urls/new">Shorten a new URL!</a>
         </div>
+    </div>
     </div>
 </body>
 
