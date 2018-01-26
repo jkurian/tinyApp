@@ -272,7 +272,7 @@ app.get('/u/:shortURL', (req, res) => {
         } else {
             redirect = '/login'
         }
-        res.status(400).render('errors', generateErrorMessage('That tinyURL does not exist!', redirect));
+        res.status(404).render('errors', generateErrorMessage('That tinyURL does not exist!', redirect));
     } else {
         let longURL = allURLS[req.params.shortURL];
         res.status(302).redirect(longURL);
@@ -293,7 +293,7 @@ app.get('/urls/:id', (req, res) => {
     }
     //TODO: Review this piece of code
     if (!usersURLs.hasOwnProperty(req.params.id)) {
-        return res.status(400).render('errors', generateErrorMessage('You have not created that tinyURL!', '/'));
+        return res.status(404).render('errors', generateErrorMessage('You have not created that tinyURL!', '/'));
     }
     let templateVars = {
         tinyURL: req.params.id,
