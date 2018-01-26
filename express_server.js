@@ -12,10 +12,15 @@ const urlDatabase = {
         '9sm5xK': 'http://www.google.com'
     },
     user2RandomID: {
-        'test': 'test.come'
+        'test': 'test.com'
     }
 };
-
+//stores all the URLS for the public to access
+const allURLS = {
+    'b2xVn2': 'http://www.lighthouselabs.ca',
+    '9sm5xK': 'http://www.google.com',
+    'test': 'test.com'
+}
 //stores all our users information
 //The two currently present are for testing only
 const users = {
@@ -54,22 +59,24 @@ String.prototype.hashCode = function () {
 //Check if user is currently logged in
 //needs refactoring
 function checkLoggedIn(req, res, next) {
-    //explain regex
-    if (req.path.match(/login|register|^\/$/)) {
-        console.log("path");
+    const currentUser = req.session.user_id;
+    if (currentUser) {
+        console.log("logged in!");
         next();
     } else {
-        const currentUser = req.session.user_id;
-        if (currentUser) {
-            console.log("currentUser logged in", currentUser);
-            next();
-        } else {
-            console.log("in else");
+        //This regular expression tests for if the user is trying to access anything 
+        //other then the login, register or / page (if they are we send them to the error page 
+        //and tell them to log in first)
+        if (!req.path.match(/^\/login\/?$|^\/register\/?$|^\/?$|\/u\//)) {
+            console.log("logged in first!");
             let errorMessage = {
                 message: 'Please login first!',
                 sendTo: '/login'
             }
             res.render('errors', errorMessage);
+        } else {
+            console.log("allowed!");
+            next();
         }
     }
 }
@@ -98,7 +105,7 @@ app.use(checkLoggedIn);
 // if user is not logged in --> redirect to login
 app.get('/', (req, res) => {
     if (req.session.user_id) {
-        res.redirect('http://localhost:8080/urls')
+        res.render('http://localhost:8080/urls')
     } else {
         res.redirect('http://localhost:8080/login')
     }
@@ -120,12 +127,14 @@ app.get('/urls', (req, res) => {
 app.post('/urls', (req, res) => {
     var tinyURL = generateRandomString();
     urlDatabase[req.session.user_id][tinyURL] = req.body.longURL;
+    allURLS[tinyURL] = req.body.longURL;
     res.status(302).redirect(`http://localhost:8080/urls/${tinyURL}`);
 });
 
 //if the user is logged in, then we redirect them to /urls
 //if the user is not logged in, then we render the login page
 app.get('/login', (req, res) => {
+    console.log("in login GET");
     if (!req.session.user_id) {
         res.render('login');
     } else {
@@ -237,15 +246,27 @@ app.get('/urls/new/', (req, res) => {
 //If the tinyURL is present in the urlDatabase, then we redirect the user to
 //the longURL assosciated with that key
 app.get('/u/:shortURL', (req, res) => {
-    if (!urlDatabase[req.session.user_id][req.params.shortURL]) {
+    // if (!urlDatabase[req.session.user_id][req.params.shortURL]) {
+    //     let errorMessage = {
+    //         message: 'That tinyURL does not exist!',
+    //         sendTo: 'urls'
+    //     }
+    //     res.status(302).render('errors', errorMessage);
+    // } else {
+    if (!allURLS[req.params.shortURL]) {
+        let redirect = '';
+        if(req.session.id) {
+            redirect = '/urls'
+        } else {
+            redirect = '/login'
+        }
         let errorMessage = {
             message: 'That tinyURL does not exist!',
-            sendTo: 'urls'
+            sendTo: redirect
         }
         res.status(302).render('errors', errorMessage);
     } else {
-        let longURL = urlDatabase[req.session.user_id][req.params.shortURL];
-        console.log(longURL);
+        let longURL = allURLS[req.params.shortURL];
         res.redirect(longURL);
     }
 });
@@ -296,7 +317,7 @@ app.post('/urls/:id', (req, res) => {
         return res.render('errors', errorMessage);
     }
     urlDatabase[req.session.user_id][req.params.id] = req.body.newURL;
-
+    allURLS[req.params.id] = req.body.newURL;
     res.status(301).redirect('http://localhost:8080/urls/');
 });
 
@@ -305,6 +326,7 @@ app.post('/urls/:id', (req, res) => {
 //We have a setTimeout here to show the popup before the page redirects
 app.post('/urls/:id/delete', (req, res) => {
     delete urlDatabase[req.session.user_id][req.params.id];
+    delete allURLS[req.params.id];
     setTimeout(function () {
         res.status(301).redirect('http://localhost:8080/urls/')
     }, 1000);
