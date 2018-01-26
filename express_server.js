@@ -17,9 +17,18 @@ const urlPerUserDatabase = {
 };
 //stores all the URLS for the public to access
 const allURLS = {
-    'b2xVn2': 'http://www.lighthouselabs.ca',
-    '9sm5xK': 'http://www.google.com',
-    'test': 'test.com'
+    'b2xVn2': {
+        longURL: 'http://www.lighthouselabs.ca',
+        date: "DATE1"
+    },
+    '9sm5xK': {
+        longURL: 'http://www.google.com',
+        date: "DATE2"        
+    },
+    'test': {
+        longURL: 'test.com',
+        date: "DATE3"  
+    }
 }
 //stores all our users information
 //The two currently present are for testing only
@@ -155,6 +164,7 @@ app.get('/', (req, res) => {
 app.get('/urls', (req, res) => {
     let templatelets = {
         urlList: urlPerUserDatabase[req.session.user_id],
+        allURLS: allURLS,
         user: users[req.session.user_id]
     };
     res.render('urls_index', templatelets);
@@ -165,7 +175,7 @@ app.get('/urls', (req, res) => {
 app.post('/urls', (req, res) => {
     let tinyURL = generateRandomString();
     urlPerUserDatabase[req.session.user_id][tinyURL] = req.body.longURL;
-    allURLS[tinyURL] = req.body.longURL;
+    allURLS[tinyURL].longURL = req.body.longURL;
     res.status(302).redirect(`http://localhost:8080/urls/${tinyURL}`);
 });
 
@@ -275,7 +285,7 @@ app.get('/u/:shortURL', (req, res) => {
         }
         res.status(404).render('errors', generateErrorMessage('That tinyURL does not exist!', redirect));
     } else {
-        let longURL = allURLS[req.params.shortURL];
+        let longURL = allURLS[req.params.shortURL].longURL;
         res.status(302).redirect(longURL);
     }
 });
@@ -325,7 +335,7 @@ app.post('/urls/:id', (req, res) => {
         return res.status(200).render('errors', generateErrorMessage('You have not created that tinyURL!', '/'));
     }
     urlPerUserDatabase[req.session.user_id][req.params.id] = req.body.newURL;
-    allURLS[req.params.id] = req.body.newURL;
+    allURLS[req.params.id].longURL = req.body.newURL;
     res.status(302).redirect('http://localhost:8080/urls/');
 });
 
