@@ -25,12 +25,12 @@ const allURLS = {
     '9sm5xK': {
         longURL: 'http://www.google.com',
         date: "DATE2EXAMPLE",
-        totalVisits: 0  
+        totalVisits: 0
     },
     'test': {
         longURL: 'test.com',
         date: "DATE3EXAMPLE",
-        totalVisits: 0  
+        totalVisits: 0
     }
 }
 //stores all our users information
@@ -81,7 +81,7 @@ function generateErrorMessage(message, redirectPath) {
 //the user will be redirected to the error.ejs page and be prompted
 //to try to register again
 function checkRegistrationDetails(req) {
-    let registrationDetails = { };
+    let registrationDetails = {};
     let blankField = false;
     let emailUsed = false;
 
@@ -114,17 +114,17 @@ function setUpNewUser(req) {
 function getDateCreated() {
     let today = new Date();
     let dd = today.getDate();
-    let mm = today.getMonth()+1; //Because Jan = 0
-    
+    let mm = today.getMonth() + 1; //Because Jan = 0
+
     let yyyy = today.getFullYear();
     //formate the day so that it has two digits
-    if(dd<10){
-        dd='0'+dd;
-    } 
-    if(mm<10){
-        mm='0'+mm;
-    } 
-    let formattedDate = dd+'/'+mm+'/'+yyyy;
+    if (dd < 10) {
+        dd = '0' + dd;
+    }
+    if (mm < 10) {
+        mm = '0' + mm;
+    }
+    let formattedDate = dd + '/' + mm + '/' + yyyy;
     return formattedDate;
 }
 //Check if user is currently logged in
@@ -132,7 +132,6 @@ function getDateCreated() {
 function checkLoggedIn(req, res, next) {
     const currentUser = req.session.user_id;
     if (currentUser) {
-        console.log("logged in!");
         next();
     } else {
         //This regular expression tests for if the user is trying to access anything 
@@ -141,7 +140,6 @@ function checkLoggedIn(req, res, next) {
         if (!req.path.match(/^\/login\/?$|^\/register\/?$|^\/?$|\/u\//)) {
             res.render('errors', generateErrorMessage('Please login first!', '/login'));
         } else {
-            console.log("allowed!");
             next();
         }
     }
@@ -196,7 +194,7 @@ app.post('/urls', (req, res) => {
     //Check the URL here with a regex if you have
     let tinyURL = generateRandomString();
     urlPerUserDatabase[req.session.user_id][tinyURL] = req.body.longURL;
-    allURLS[tinyURL] = allURLS[tinyURL] || { };
+    allURLS[tinyURL] = allURLS[tinyURL] || {};
     allURLS[tinyURL].longURL = req.body.longURL;
     allURLS[tinyURL].totalVisits = allURLS[tinyURL].totalVisits || 0;
     //ADD URL DATE HERE
@@ -207,7 +205,6 @@ app.post('/urls', (req, res) => {
 //if the user is logged in, then we redirect them to /urls
 //if the user is not logged in, then we render the login page
 app.get('/login', (req, res) => {
-    console.log("in login GET");
     if (!req.session.user_id) {
         res.status(200).render('login');
     } else {
@@ -301,10 +298,7 @@ app.get('/urls/new/', (req, res) => {
 //If the tinyURL is present in the urlPerUserDatabase, then we redirect the user to
 //the longURL assosciated with that key
 app.get('/u/:shortURL', (req, res) => {
-    console.log(allURLS[req.params.shortURL]);
-    console.log(req.params.shortURL);
     if (!allURLS[req.params.shortURL]) {
-        console.log("tinyURL does not exist");
         let redirect = '';
         if (req.session.id) {
             redirect = '/urls'
@@ -315,7 +309,6 @@ app.get('/u/:shortURL', (req, res) => {
     } else {
         let longURL = allURLS[req.params.shortURL].longURL;
         allURLS[req.params.shortURL].totalVisits++;
-        console.log("in else, longURL is", longURL)
         res.status(302).redirect(longURL);
     }
 });
